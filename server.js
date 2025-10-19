@@ -51,7 +51,7 @@ app.post('/api/auth/register', async (req, res) => {
     avatar: 'https://avatars.githubusercontent.com/u/9919?v=4',
   };
   users = [newUser, ...users];
-  return res.status(201).json({ user: newUser, token: 'demo-token' });
+  return res.status(201).json({ user: newUser, token: `demo-token:${newUser.email}` });
 });
 
 app.post('/api/auth/login', async (req, res) => {
@@ -67,7 +67,25 @@ app.post('/api/auth/login', async (req, res) => {
   }
 
   // In real app, issue JWT here
-  return res.json({ user: found, token: 'demo-token' });
+  return res.json({ user: found, token: `demo-token:${found.email}` });
+});
+
+// Simple auth middleware for demo token format: demo-token:<email>
+function requireAuth(req, res, next) {
+  const auth = req.headers.authorization || '';
+  const [scheme, token] = auth.split(' ');
+  if (scheme !== 'Bearer' || !token || !token.startsWith('demo-token:')) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+  const email = token.split(':')[1];
+  const user = users.find((u) => u.email === email);
+  if (!user) return res.status(401).json({ message: 'Unauthorized' });
+  req.user = user;
+  next();
+}
+
+app.get('/api/me', requireAuth, (req, res) => {
+  return res.json({ user: req.user });
 });
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));

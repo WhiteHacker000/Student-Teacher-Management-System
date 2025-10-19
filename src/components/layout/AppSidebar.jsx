@@ -1,4 +1,4 @@
-import { Users, BookOpen, Calendar, BarChart3, Settings, LogOut, GraduationCap, User } from 'lucide-react';
+import { Users, BookOpen, Calendar, BarChart3, Settings, GraduationCap, User } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   Sidebar,
@@ -14,8 +14,6 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { useAuth } from '@/contexts/AuthContext';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 
 const teacherNavItems = [
   { title: 'Dashboard', url: '/dashboard', icon: BarChart3 },
@@ -86,33 +84,6 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
-      <SidebarFooter className="p-4 border-t">
-        <div className="flex items-center gap-3 mb-3">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={user?.avatar} alt={user?.name} />
-            <AvatarFallback className="bg-gradient-primary text-white">
-              {user?.name?.split(' ').map(n => n[0]).join('')}
-            </AvatarFallback>
-          </Avatar>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{user?.name}</p>
-              <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-            </div>
-          )}
-        </div>
-        
-        <Button
-          variant="ghost"
-          size={collapsed ? "icon" : "sm"}
-          onClick={logout}
-          className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-        >
-          <LogOut className="h-4 w-4" />
-          {!collapsed && <span className="ml-2">Logout</span>}
-        </Button>
-      </SidebarFooter>
     </Sidebar>
   );
 }

@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { GraduationCap, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const RegisterForm = () => {
   const [name, setName] = useState('');
@@ -15,12 +15,14 @@ const RegisterForm = () => {
   const [role, setRole] = useState('student');
   const { register: registerUser, isLoading } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await registerUser({ name, email, password, role });
       toast({ title: 'Account created', description: 'You are now signed in.' });
+      navigate('/dashboard');
     } catch (error) {
       toast({ title: 'Registration failed', description: error.message || 'Please try again', variant: 'destructive' });
     }

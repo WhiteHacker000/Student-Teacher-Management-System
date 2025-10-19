@@ -44,8 +44,15 @@ export function SidebarFooter({ className = '', children }) { return <div classN
 export function SidebarTrigger({ className = '' }) {
   const { state, setState } = useSidebar();
   return (
-    <button className={className} onClick={() => setState(state === 'collapsed' ? 'expanded' : 'collapsed')}>
-      {state === 'collapsed' ? '➡️' : '⬅️'}
+    <button
+      aria-label="Toggle sidebar"
+      className={`inline-flex h-9 w-9 items-center justify-center rounded-md border border-gray-300 hover:bg-gray-50 ${className}`}
+      onClick={() => setState(state === 'collapsed' ? 'expanded' : 'collapsed')}
+    >
+      <span style={{ display: 'inline-block', width: 16, height: 2, backgroundColor: '#1a1a1a', position: 'relative' }}>
+        <span style={{ content: '""', position: 'absolute', top: -6, left: 0, right: 0, height: 2, backgroundColor: '#1a1a1a' }} />
+        <span style={{ content: '""', position: 'absolute', top: 6, left: 0, right: 0, height: 2, backgroundColor: '#1a1a1a' }} />
+      </span>
     </button>
   );
 }

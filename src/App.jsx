@@ -6,6 +6,13 @@ import RegisterForm from './components/auth/RegisterForm.jsx';
 import DashboardLayout from './components/layout/DashbordLayout.jsx';
 import StudentDashboard from './components/dashboard/studentDashboard.jsx';
 import TeacherDashboard from './components/dashboard/teacherDashboard.jsx';
+import Students from './pages/Students.jsx';
+import Courses from './pages/Courses.jsx';
+import Attendance from './pages/Attendance.jsx';
+import Settings from './pages/Settings.jsx';
+import MyCourses from './pages/student/MyCourses.jsx';
+import MyAttendance from './pages/student/MyAttendance.jsx';
+import MyGrades from './pages/student/MyGrades.jsx';
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
@@ -15,10 +22,40 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
+function PublicOnlyRoute({ children }) {
+  const { user } = useAuth();
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return children;
+}
+
 function DashboardRouter() {
   const { user } = useAuth();
-  const dashboard = user?.role === 'teacher' ? <TeacherDashboard /> : <StudentDashboard />;
-  return <DashboardLayout>{dashboard}</DashboardLayout>;
+  const isTeacher = user?.role === 'teacher';
+  return (
+    <DashboardLayout>
+      <Routes>
+        <Route index element={isTeacher ? <TeacherDashboard /> : <StudentDashboard />} />
+        {isTeacher ? (
+          <>
+            <Route path="students" element={<Students />} />
+            <Route path="courses" element={<Courses />} />
+            <Route path="attendance" element={<Attendance />} />
+            <Route path="settings" element={<Settings />} />
+          </>
+        ) : (
+          <>
+            <Route path="my-courses" element={<MyCourses />} />
+            <Route path="my-attendance" element={<MyAttendance />} />
+            <Route path="my-grades" element={<MyGrades />} />
+            <Route path="settings" element={<Settings />} />
+          </>
+        )}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    </DashboardLayout>
+  );
 }
 
 export default function App() {
@@ -26,8 +63,8 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={<LoginForm />} />
-          <Route path="/register" element={<RegisterForm />} />
+          <Route path="/login" element={<PublicOnlyRoute><LoginForm /></PublicOnlyRoute>} />
+          <Route path="/register" element={<PublicOnlyRoute><RegisterForm /></PublicOnlyRoute>} />
           <Route
             path="/dashboard"
             element={

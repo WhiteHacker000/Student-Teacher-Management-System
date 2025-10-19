@@ -1,9 +1,13 @@
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { LogOut } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const DashboardLayout = ({ children }) => {
   const { user } = useAuth();
+  const { logout } = useAuth();
 
   return (
     <SidebarProvider>
@@ -22,6 +26,18 @@ const DashboardLayout = ({ children }) => {
                   ? 'Manage your classes and students'
                   : 'Track your academic progress'}
               </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={user?.avatar} alt={user?.name} />
+                <AvatarFallback className="bg-gradient-primary text-white">
+                  {user?.name?.split(' ').map(n => n[0]).join('')}
+                </AvatarFallback>
+              </Avatar>
+              <Button variant="outline" onClick={logout} className="text-sm">
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
             </div>
           </header>
           

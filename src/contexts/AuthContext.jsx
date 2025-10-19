@@ -37,10 +37,35 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Check for stored auth on mount
     const storedUser = localStorage.getItem('sms_user');
-    if (storedUser) {
+    const token = localStorage.getItem('sms_token');
+    if (storedUser && token) {
       setUser(JSON.parse(storedUser));
     }
-    setIsLoading(false);
+    // Try to hydrate from token
+    (async () => {
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+      try {
+        const res = await fetch('/api/me', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.user);
+          localStorage.setItem('sms_user', JSON.stringify(data.user));
+        } else {
+          localStorage.removeItem('sms_user');
+          localStorage.removeItem('sms_token');
+          setUser(null);
+        }
+      } catch (_) {
+        // ignore network errors for demo
+      } finally {
+        setIsLoading(false);
+      }
+    })();
   }, []);
 
   const login = async (email, password) => {
@@ -67,6 +92,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('sms_user');
+    localStorage.removeItem('sms_token');
   };
 
   const register = async ({ name, email, password, role }) => {
