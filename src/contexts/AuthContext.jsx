@@ -45,19 +45,23 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     setIsLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const foundUser = mockUsers.find(u => u.email === email);
-    if (foundUser && password === 'password') {
-      setUser(foundUser);
-      localStorage.setItem('sms_user', JSON.stringify(foundUser));
-    } else {
-      throw new Error('Invalid credentials');
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || 'Login failed');
+      }
+      const data = await res.json();
+      setUser(data.user);
+      localStorage.setItem('sms_user', JSON.stringify(data.user));
+      localStorage.setItem('sms_token', data.token);
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   const logout = () => {
@@ -65,8 +69,29 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('sms_user');
   };
 
+  const register = async ({ name, email, password, role }) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password, role }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || 'Registration failed');
+      }
+      const data = await res.json();
+      setUser(data.user);
+      localStorage.setItem('sms_user', JSON.stringify(data.user));
+      localStorage.setItem('sms_token', data.token);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, logout, register, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

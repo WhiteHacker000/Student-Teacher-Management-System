@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { GraduationCap, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Link } from 'react-router-dom';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -102,6 +103,9 @@ const LoginForm = () => {
             </div>
           </CardContent>
         </Card>
+        <div className="text-center text-sm text-white/90">
+          New here? <Link to="/register" className="underline">Create an account</Link>
+        </div>
       </div>
     </div>
   );
