@@ -2,34 +2,6 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext(undefined);
 
-// Mock users for demo
-const mockUsers = [
-  {
-    id: '1',
-    name: 'John Smith',
-    email: 'teacher@school.edu',
-    role: 'teacher',
-    teacherId: 'T001',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face'
-  },
-  {
-    id: '2',
-    name: 'Alice Johnson',
-    email: 'alice@student.edu',
-    role: 'student',
-    studentId: 'S001',
-    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face'
-  },
-  {
-    id: '3',
-    name: 'Bob Wilson',
-    email: 'bob@student.edu',
-    role: 'student',
-    studentId: 'S002',
-    avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150&h=150&fit=crop&crop=face'
-  }
-];
-
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,13 +20,13 @@ export const AuthProvider = ({ children }) => {
         return;
       }
       try {
-        const res = await fetch('/api/me', {
+        const res = await fetch('/api/auth/profile', {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
           const data = await res.json();
-          setUser(data.user);
-          localStorage.setItem('sms_user', JSON.stringify(data.user));
+          setUser(data.data.user);
+          localStorage.setItem('sms_user', JSON.stringify(data.data.user));
         } else {
           localStorage.removeItem('sms_user');
           localStorage.removeItem('sms_token');
@@ -68,22 +40,26 @@ export const AuthProvider = ({ children }) => {
     })();
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (username, password) => {
     setIsLoading(true);
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ username, password }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.message || 'Login failed');
       }
       const data = await res.json();
-      setUser(data.user);
-      localStorage.setItem('sms_user', JSON.stringify(data.user));
-      localStorage.setItem('sms_token', data.token);
+      if (data.success) {
+        setUser(data.data.user);
+        localStorage.setItem('sms_user', JSON.stringify(data.data.user));
+        localStorage.setItem('sms_token', data.data.token);
+      } else {
+        throw new Error(data.message || 'Login failed');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -95,22 +71,38 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('sms_token');
   };
 
-  const register = async ({ name, email, password, role }) => {
+  const register = async ({ username, password, role, firstName, lastName, email, phone, dob, hireDate, departmentId, classId }) => {
     setIsLoading(true);
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, role }),
+        body: JSON.stringify({ 
+          username, 
+          password, 
+          role, 
+          firstName, 
+          lastName, 
+          email, 
+          phone, 
+          dob, 
+          hireDate, 
+          departmentId, 
+          classId 
+        }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.message || 'Registration failed');
       }
       const data = await res.json();
-      setUser(data.user);
-      localStorage.setItem('sms_user', JSON.stringify(data.user));
-      localStorage.setItem('sms_token', data.token);
+      if (data.success) {
+        setUser(data.data.user);
+        localStorage.setItem('sms_user', JSON.stringify(data.data.user));
+        localStorage.setItem('sms_token', data.data.token);
+      } else {
+        throw new Error(data.message || 'Registration failed');
+      }
     } finally {
       setIsLoading(false);
     }

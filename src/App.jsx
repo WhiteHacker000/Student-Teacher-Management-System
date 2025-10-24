@@ -13,6 +13,11 @@ import Settings from './pages/Settings.jsx';
 import MyCourses from './pages/student/MyCourses.jsx';
 import MyAttendance from './pages/student/MyAttendance.jsx';
 import MyGrades from './pages/student/MyGrades.jsx';
+import Timetable from './pages/student/Timetable.jsx';
+import Assignments from './pages/student/Assignments.jsx';
+import Feedback from './pages/student/Feedback.jsx';
+import Messages from './pages/student/Messages.jsx';
+import Notifications from './pages/student/Notifications.jsx';
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
@@ -46,7 +51,12 @@ function DashboardRouter() {
           </>
         ) : (
           <>
+            <Route path="timetable" element={<Timetable />} />
             <Route path="my-courses" element={<MyCourses />} />
+            <Route path="assignments" element={<Assignments />} />
+            <Route path="feedback" element={<Feedback />} />
+            <Route path="messages" element={<Messages />} />
+            <Route path="notifications" element={<Notifications />} />
             <Route path="my-attendance" element={<MyAttendance />} />
             <Route path="my-grades" element={<MyGrades />} />
             <Route path="settings" element={<Settings />} />

@@ -1,4 +1,4 @@
-import { Users, BookOpen, Calendar, BarChart3, Settings, GraduationCap, User } from 'lucide-react';
+import { Users, BookOpen, Calendar, BarChart3, Settings, GraduationCap, User, NotebookPen, MessageSquare, BellRing, Table2 } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   Sidebar,
@@ -25,7 +25,12 @@ const teacherNavItems = [
 
 const studentNavItems = [
   { title: 'Dashboard', url: '/dashboard', icon: BarChart3 },
+  { title: 'Timetable', url: '/timetable', icon: Table2 },
   { title: 'My Courses', url: '/my-courses', icon: BookOpen },
+  { title: 'Assignments', url: '/assignments', icon: NotebookPen },
+  { title: 'Feedback', url: '/feedback', icon: User },
+  { title: 'Messages', url: '/messages', icon: MessageSquare },
+  { title: 'Notifications', url: '/notifications', icon: BellRing },
   { title: 'My Attendance', url: '/my-attendance', icon: Calendar },
   { title: 'My Grades', url: '/my-grades', icon: User },
 ];
