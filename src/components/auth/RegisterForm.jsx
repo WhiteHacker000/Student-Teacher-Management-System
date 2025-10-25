@@ -33,7 +33,10 @@ const RegisterForm = () => {
         phone 
       });
       toast({ title: 'Account created', description: 'You are now signed in.' });
-      navigate('/dashboard');
+      // Small delay to ensure state is set
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 100);
     } catch (error) {
       toast({ title: 'Registration failed', description: error.message || 'Please try again', variant: 'destructive' });
     }

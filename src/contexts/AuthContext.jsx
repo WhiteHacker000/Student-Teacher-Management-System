@@ -12,32 +12,28 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('sms_token');
     if (storedUser && token) {
       setUser(JSON.parse(storedUser));
-    }
-    // Try to hydrate from token
-    (async () => {
-      if (!token) {
-        setIsLoading(false);
-        return;
-      }
-      try {
-        const res = await fetch('/api/auth/profile', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.data.user);
-          localStorage.setItem('sms_user', JSON.stringify(data.data.user));
-        } else {
-          localStorage.removeItem('sms_user');
-          localStorage.removeItem('sms_token');
-          setUser(null);
+      // Try to hydrate from token in background
+      (async () => {
+        try {
+          const res = await fetch('/api/auth/profile', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setUser(data.data.user);
+            localStorage.setItem('sms_user', JSON.stringify(data.data.user));
+          } else {
+            // Only clear if the token is actually invalid
+            localStorage.removeItem('sms_user');
+            localStorage.removeItem('sms_token');
+            setUser(null);
+          }
+        } catch (_) {
+          // ignore network errors for demo
         }
-      } catch (_) {
-        // ignore network errors for demo
-      } finally {
-        setIsLoading(false);
-      }
-    })();
+      })();
+    }
+    setIsLoading(false);
   }, []);
 
   const login = async (username, password) => {
@@ -107,6 +103,9 @@ export const AuthProvider = ({ children }) => {
       } else {
         throw new Error(data.message || 'Registration failed');
       }
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
     } finally {
       setIsLoading(false);
     }
