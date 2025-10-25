@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { User } from '../models/User.js';
+import { getDb } from '../config/sqlite.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key_here';
 
@@ -20,7 +20,8 @@ export const authenticateToken = async (req, res, next) => {
     const decoded = jwt.verify(token, JWT_SECRET);
     
     // Get user from database
-    const user = await User.findById(decoded.userId);
+    const db = await getDb();
+    const user = await db.get('SELECT * FROM Users WHERE UserID = ?', [decoded.userId]);
     if (!user) {
       return res.status(401).json({ 
         success: false, 

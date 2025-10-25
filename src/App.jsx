@@ -37,7 +37,7 @@ function PublicOnlyRoute({ children }) {
 
 function DashboardRouter() {
   const { user } = useAuth();
-  const isTeacher = user?.role === 'teacher';
+  const isTeacher = user?.Role === 'teacher';
   return (
     <DashboardLayout>
       <Routes>
@@ -76,7 +76,7 @@ export default function App() {
           <Route path="/login" element={<PublicOnlyRoute><LoginForm /></PublicOnlyRoute>} />
           <Route path="/register" element={<PublicOnlyRoute><RegisterForm /></PublicOnlyRoute>} />
           <Route
-            path="/dashboard"
+            path="/dashboard/*"
             element={
               <ProtectedRoute>
                 <DashboardRouter />

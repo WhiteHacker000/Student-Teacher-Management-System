@@ -1,10 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { testConnection } from './config/database.js';
+// import { testConnection } from './config/database.js';
 
 // Import controllers
-import * as authController from './controllers/authController.js';
+import * as authController from './controllers/simpleAuthController.js';
 import * as studentController from './controllers/studentController.js';
 import * as teacherController from './controllers/teacherController.js';
 
@@ -25,14 +25,7 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Test database connection on startup
-testConnection().then(connected => {
-  if (connected) {
-    console.log('✅ Database connection successful');
-  } else {
-    console.log('❌ Database connection failed');
-  }
-});
+// SQLite database will be initialized automatically
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -47,7 +40,7 @@ app.get('/api/health', (req, res) => {
 app.post('/api/auth/register', authController.register);
 app.post('/api/auth/login', authController.login);
 app.get('/api/auth/profile', authenticateToken, authController.getProfile);
-app.put('/api/auth/profile', authenticateToken, authController.updateProfile);
+// app.put('/api/auth/profile', authenticateToken, authController.updateProfile);
 
 // Student routes
 app.get('/api/students', authenticateToken, authorize('admin', 'teacher'), studentController.getAllStudents);
@@ -201,7 +194,7 @@ app.use((err, req, res, next) => {
 });
 
 // 404 handler
-app.use('*', (req, res) => {
+app.use((req, res) => {
   res.status(404).json({
     success: false,
     message: 'Route not found'

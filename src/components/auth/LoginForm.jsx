@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Link, useNavigate } from 'react-router-dom';
 
 const LoginForm = () => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const { login, isLoading } = useAuth();
   const { toast } = useToast();
@@ -18,7 +18,7 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await login(email, password);
+      await login(username, password);
       toast({
         title: "Welcome back!",
         description: "You have successfully logged in.",
@@ -27,7 +27,7 @@ const LoginForm = () => {
     } catch (error) {
       toast({
         title: "Login failed",
-        description: "Invalid email or password. Try: teacher@school.edu or alice@student.edu with password 'password'",
+        description: error.message || "Invalid username or password. Please try again.",
         variant: "destructive",
       });
     }
@@ -56,13 +56,13 @@ const LoginForm = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="username">Username</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="your.email@school.edu"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="username"
+                  type="text"
+                  placeholder="Enter your username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   required
                   className="transition-all duration-300 focus:scale-[1.02]"
                 />
@@ -98,9 +98,9 @@ const LoginForm = () => {
             <div className="mt-6 p-4 bg-muted/50 rounded-lg">
               <p className="text-sm text-muted-foreground mb-2 font-medium">Demo Accounts:</p>
               <div className="space-y-1 text-xs">
-                <p><strong>Teacher:</strong> teacher@school.edu</p>
-                <p><strong>Student:</strong> alice@student.edu</p>
-                <p><strong>Password:</strong> password</p>
+                <p><strong>Teacher:</strong> teacher1</p>
+                <p><strong>Student:</strong> student1</p>
+                <p><strong>Password:</strong> password123</p>
               </div>
             </div>
           </CardContent>

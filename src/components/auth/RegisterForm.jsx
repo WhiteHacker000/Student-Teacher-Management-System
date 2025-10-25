@@ -9,10 +9,13 @@ import { useToast } from '@/hooks/use-toast';
 import { Link, useNavigate } from 'react-router-dom';
 
 const RegisterForm = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('student');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const { register: registerUser, isLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -20,7 +23,15 @@ const RegisterForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await registerUser({ name, email, password, role });
+      await registerUser({ 
+        username, 
+        password, 
+        role, 
+        firstName, 
+        lastName, 
+        email, 
+        phone 
+      });
       toast({ title: 'Account created', description: 'You are now signed in.' });
       navigate('/dashboard');
     } catch (error) {
@@ -49,12 +60,24 @@ const RegisterForm = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
+                <Label htmlFor="username">Username</Label>
+                <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First Name</Label>
+                <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone</Label>
+                <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>

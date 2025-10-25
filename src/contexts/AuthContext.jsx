@@ -48,11 +48,13 @@ export const AuthProvider = ({ children }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
+      
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.message || 'Login failed');
       }
       const data = await res.json();
+      
       if (data.success) {
         setUser(data.data.user);
         localStorage.setItem('sms_user', JSON.stringify(data.data.user));
@@ -60,6 +62,8 @@ export const AuthProvider = ({ children }) => {
       } else {
         throw new Error(data.message || 'Login failed');
       }
+    } catch (error) {
+      throw error;
     } finally {
       setIsLoading(false);
     }
