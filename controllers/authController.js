@@ -4,9 +4,11 @@ import { Student } from '../models/Student.js';
 import { Teacher } from '../models/Teacher.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key_here';
-const JWT_EXPIRES_IN = '7d';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'your_super_secret_refresh_jwt_key_here';
+const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '30d';
 
-// Generate JWT token
+// Generate JWT access token
 const generateToken = (user) => {
   return jwt.sign(
     { 
@@ -17,6 +19,18 @@ const generateToken = (user) => {
     },
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN }
+  );
+};
+
+// Generate JWT refresh token
+const generateRefreshToken = (user) => {
+  return jwt.sign(
+    { 
+      userId: user.UserID, 
+      username: user.Username 
+    },
+    JWT_REFRESH_SECRET,
+    { expiresIn: JWT_REFRESH_EXPIRES_IN }
   );
 };
 
@@ -87,7 +101,14 @@ export const register = async (req, res) => {
 
     // Get the created user
     const user = await User.findById(userId);
+    if (!user) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve created user'
+      });
+    }
     const token = generateToken(user);
+    const refreshToken = generateRefreshToken(user);
 
     // Update last login
     await user.updateLastLogin();
@@ -97,7 +118,8 @@ export const register = async (req, res) => {
       message: 'User registered successfully',
       data: {
         user: user.getSafeData(),
-        token
+        token,
+        refreshToken
       }
     });
 
@@ -121,6 +143,7 @@ export const login = async (req, res) => {
         success: false, 
         message: 'Username and password are required' 
       });
+
     }
 
     // Find user by username
@@ -141,8 +164,9 @@ export const login = async (req, res) => {
       });
     }
 
-    // Generate token
+    // Generate tokens
     const token = generateToken(user);
+    const refreshToken = generateRefreshToken(user);
 
     // Update last login
     await user.updateLastLogin();
@@ -156,7 +180,8 @@ export const login = async (req, res) => {
       data: {
         user: user.getSafeData(),
         profile,
-        token
+        token,
+        refreshToken
       }
     });
 
@@ -240,6 +265,65 @@ export const updateProfile = async (req, res) => {
 
   } catch (error) {
     console.error('Update profile error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error',
+      error: error.message 
+    });
+  }
+};
+
+// Refresh access token using refresh token
+export const refreshAccessToken = async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Refresh token is required' 
+      });
+    }
+
+    // Verify refresh token
+    let decoded;
+    try {
+      decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        return res.status(401).json({ 
+          success: false, 
+          message: 'Refresh token has expired' 
+        });
+      }
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid refresh token' 
+      });
+    }
+
+    // Get user from database
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    // Generate new access token
+    const newToken = generateToken(user);
+
+    res.json({
+      success: true,
+      message: 'Access token refreshed successfully',
+      data: {
+        token: newToken
+      }
+    });
+
+  } catch (error) {
+    console.error('Refresh token error:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Internal server error',

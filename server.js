@@ -39,6 +39,7 @@ app.get('/api/health', (req, res) => {
 // Authentication routes
 app.post('/api/auth/register', authController.register);
 app.post('/api/auth/login', authController.login);
+app.post('/api/auth/refresh', authController.refreshAccessToken);
 app.get('/api/auth/profile', authenticateToken, authController.getProfile);
 // app.put('/api/auth/profile', authenticateToken, authController.updateProfile);
 
