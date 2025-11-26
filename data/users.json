@@ -1,0 +1,20 @@
+[
+  {
+    "id": "1",
+    "name": "John Smith",
+    "email": "teacher@school.edu",
+    "role": "teacher",
+    "teacherId": "T001",
+    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+    "password": "password"
+  },
+  {
+    "id": "2",
+    "name": "Alice Johnson",
+    "email": "alice@student.edu",
+    "role": "student",
+    "studentId": "S001",
+    "avatar": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
+    "password": "password"
+  }
+]
