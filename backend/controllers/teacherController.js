@@ -12,10 +12,10 @@ export const getAllTeachers = async (req, res) => {
     });
   } catch (error) {
     console.error('Get all teachers error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -25,11 +25,11 @@ export const getTeacherById = async (req, res) => {
   try {
     const { id } = req.params;
     const teacher = await Teacher.findById(id);
-    
+
     if (!teacher) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Teacher not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Teacher not found'
       });
     }
 
@@ -39,10 +39,10 @@ export const getTeacherById = async (req, res) => {
     });
   } catch (error) {
     console.error('Get teacher by ID error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -52,11 +52,11 @@ export const getTeacherClasses = async (req, res) => {
   try {
     const { id } = req.params;
     const teacher = await Teacher.findById(id);
-    
+
     if (!teacher) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Teacher not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Teacher not found'
       });
     }
 
@@ -67,10 +67,10 @@ export const getTeacherClasses = async (req, res) => {
     });
   } catch (error) {
     console.error('Get teacher classes error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -80,11 +80,11 @@ export const getTeacherStudents = async (req, res) => {
   try {
     const { id } = req.params;
     const teacher = await Teacher.findById(id);
-    
+
     if (!teacher) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Teacher not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Teacher not found'
       });
     }
 
@@ -95,10 +95,10 @@ export const getTeacherStudents = async (req, res) => {
     });
   } catch (error) {
     console.error('Get teacher students error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -109,11 +109,11 @@ export const getStudentsInClass = async (req, res) => {
     const { id } = req.params;
     const { classId } = req.params;
     const teacher = await Teacher.findById(id);
-    
+
     if (!teacher) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Teacher not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Teacher not found'
       });
     }
 
@@ -124,10 +124,10 @@ export const getStudentsInClass = async (req, res) => {
     });
   } catch (error) {
     console.error('Get students in class error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -137,11 +137,11 @@ export const getTeacherAssignments = async (req, res) => {
   try {
     const { id } = req.params;
     const teacher = await Teacher.findById(id);
-    
+
     if (!teacher) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Teacher not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Teacher not found'
       });
     }
 
@@ -152,10 +152,10 @@ export const getTeacherAssignments = async (req, res) => {
     });
   } catch (error) {
     console.error('Get teacher assignments error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -167,11 +167,11 @@ export const getClassAttendance = async (req, res) => {
     const { classId } = req.params;
     const { date } = req.query;
     const teacher = await Teacher.findById(id);
-    
+
     if (!teacher) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Teacher not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Teacher not found'
       });
     }
 
@@ -182,10 +182,10 @@ export const getClassAttendance = async (req, res) => {
     });
   } catch (error) {
     console.error('Get class attendance error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -196,9 +196,9 @@ export const createTeacher = async (req, res) => {
     const { FirstName, LastName, Email, Phone, HireDate, DepartmentID } = req.body;
 
     if (!FirstName || !LastName || !Email) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'First name, last name, and email are required' 
+      return res.status(400).json({
+        success: false,
+        message: 'First name, last name, and email are required'
       });
     }
 
@@ -220,10 +220,10 @@ export const createTeacher = async (req, res) => {
     });
   } catch (error) {
     console.error('Create teacher error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -233,11 +233,11 @@ export const updateTeacher = async (req, res) => {
   try {
     const { id } = req.params;
     const teacher = await Teacher.findById(id);
-    
+
     if (!teacher) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Teacher not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Teacher not found'
       });
     }
 
@@ -259,10 +259,39 @@ export const updateTeacher = async (req, res) => {
     });
   } catch (error) {
     console.error('Update teacher error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
+    });
+  }
+};
+
+// Delete teacher
+export const deleteTeacher = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const teacher = await Teacher.findById(id);
+
+    if (!teacher) {
+      return res.status(404).json({
+        success: false,
+        message: 'Teacher not found'
+      });
+    }
+
+    await teacher.delete();
+
+    res.json({
+      success: true,
+      message: 'Teacher deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete teacher error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
     });
   }
 };
@@ -272,11 +301,11 @@ export const getTeacherDashboard = async (req, res) => {
   try {
     const { id } = req.params;
     const teacher = await Teacher.findById(id);
-    
+
     if (!teacher) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Teacher not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Teacher not found'
       });
     }
 
@@ -322,10 +351,10 @@ export const getTeacherDashboard = async (req, res) => {
     });
   } catch (error) {
     console.error('Get teacher dashboard error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
     });
   }
 };

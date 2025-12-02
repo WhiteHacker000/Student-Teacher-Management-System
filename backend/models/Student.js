@@ -16,12 +16,12 @@ export class Student {
   static async create(studentData) {
     const pool = await getPool();
     const { FirstName, LastName, Email, Phone, DOB, EnrollmentDate, ClassID } = studentData;
-    
+
     const [result] = await pool.execute(
       'INSERT INTO Students (FirstName, LastName, Email, Phone, DOB, EnrollmentDate, ClassID) VALUES (?, ?, ?, ?, ?, ?, ?)',
       [FirstName, LastName, Email, Phone, DOB, EnrollmentDate, ClassID]
     );
-    
+
     return result.insertId;
   }
 
@@ -86,6 +86,15 @@ export class Student {
     }
   }
 
+  // Delete student
+  async delete() {
+    const pool = await getPool();
+    await pool.execute(
+      'DELETE FROM Students WHERE StudentID = ?',
+      [this.StudentID]
+    );
+  }
+
   // Get student's classes
   async getClasses() {
     const pool = await getPool();
@@ -124,14 +133,14 @@ export class Student {
       WHERE a.StudentID = ?
     `;
     const params = [this.StudentID];
-    
+
     if (classId) {
       query += ' AND a.ClassID = ?';
       params.push(classId);
     }
-    
+
     query += ' ORDER BY a.Date DESC';
-    
+
     const [rows] = await pool.execute(query, params);
     return rows;
   }

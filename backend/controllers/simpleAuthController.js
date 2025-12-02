@@ -258,3 +258,46 @@ export const getProfile = async (req, res) => {
     });
   }
 };
+
+// Delete user account permanently
+export const deleteAccount = async (req, res) => {
+  try {
+    const db = await getDb();
+    const userId = req.user.userId;
+    
+    // Get user to find associated record
+    const user = await db.get('SELECT * FROM Users WHERE UserID = ?', [userId]);
+    
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    // Delete associated record (Student or Teacher) if exists
+    if (user.AssociatedID) {
+      if (user.Role === 'student') {
+        await db.run('DELETE FROM Students WHERE StudentID = ?', [user.AssociatedID]);
+      } else if (user.Role === 'teacher') {
+        await db.run('DELETE FROM Teachers WHERE TeacherID = ?', [user.AssociatedID]);
+      }
+    }
+
+    // Delete the user account
+    await db.run('DELETE FROM Users WHERE UserID = ?', [userId]);
+
+    res.json({
+      success: true,
+      message: 'Account deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Delete account error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error',
+      error: error.message 
+    });
+  }
+};

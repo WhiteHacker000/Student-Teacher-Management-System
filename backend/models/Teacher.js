@@ -15,12 +15,12 @@ export class Teacher {
   static async create(teacherData) {
     const pool = await getPool();
     const { FirstName, LastName, Email, Phone, HireDate, DepartmentID } = teacherData;
-    
+
     const [result] = await pool.execute(
       'INSERT INTO Teachers (FirstName, LastName, Email, Phone, HireDate, DepartmentID) VALUES (?, ?, ?, ?, ?, ?)',
       [FirstName, LastName, Email, Phone, HireDate, DepartmentID]
     );
-    
+
     return result.insertId;
   }
 
@@ -51,6 +51,37 @@ export class Teacher {
       'SELECT * FROM Teachers ORDER BY FirstName, LastName'
     );
     return rows.map(row => new Teacher(row));
+  }
+
+  // Update teacher
+  async update(updateData) {
+    const pool = await getPool();
+    const fields = [];
+    const values = [];
+
+    Object.keys(updateData).forEach(key => {
+      if (updateData[key] !== undefined) {
+        fields.push(`${key} = ?`);
+        values.push(updateData[key]);
+      }
+    });
+
+    if (fields.length > 0) {
+      values.push(this.TeacherID);
+      await pool.execute(
+        `UPDATE Teachers SET ${fields.join(', ')} WHERE TeacherID = ?`,
+        values
+      );
+    }
+  }
+
+  // Delete teacher
+  async delete() {
+    const pool = await getPool();
+    await pool.execute(
+      'DELETE FROM Teachers WHERE TeacherID = ?',
+      [this.TeacherID]
+    );
   }
 
   // Get teacher's classes
@@ -116,14 +147,14 @@ export class Teacher {
       WHERE c.TeacherID = ? AND a.ClassID = ?
     `;
     const params = [this.TeacherID, classId];
-    
+
     if (date) {
       query += ' AND a.Date = ?';
       params.push(date);
     }
-    
+
     query += ' ORDER BY a.Date DESC, s.FirstName';
-    
+
     const [rows] = await pool.execute(query, params);
     return rows;
   }

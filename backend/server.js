@@ -29,8 +29,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    success: true, 
+  res.json({
+    success: true,
     message: 'Server is running',
     timestamp: new Date().toISOString()
   });
@@ -41,6 +41,7 @@ app.post('/api/auth/register', authController.register);
 app.post('/api/auth/login', authController.login);
 // app.post('/api/auth/refresh', authController.refreshAccessToken);
 app.get('/api/auth/profile', authenticateToken, authController.getProfile);
+app.delete('/api/auth/account', authenticateToken, authController.deleteAccount);
 // app.put('/api/auth/profile', authenticateToken, authController.updateProfile);
 
 // Student routes
@@ -48,6 +49,7 @@ app.get('/api/students', authenticateToken, authorize('admin', 'teacher'), stude
 app.get('/api/students/:id', authenticateToken, studentController.getStudentById);
 app.post('/api/students', authenticateToken, authorize('admin'), studentController.createStudent);
 app.put('/api/students/:id', authenticateToken, studentController.updateStudent);
+app.delete('/api/students/:id', authenticateToken, authorize('admin'), studentController.deleteStudent);
 app.get('/api/students/:id/classes', authenticateToken, studentController.getStudentClasses);
 app.get('/api/students/:id/assignments', authenticateToken, studentController.getStudentAssignments);
 app.get('/api/students/:id/attendance', authenticateToken, studentController.getStudentAttendance);
@@ -59,6 +61,7 @@ app.get('/api/teachers', authenticateToken, authorize('admin'), teacherControlle
 app.get('/api/teachers/:id', authenticateToken, teacherController.getTeacherById);
 app.post('/api/teachers', authenticateToken, authorize('admin'), teacherController.createTeacher);
 app.put('/api/teachers/:id', authenticateToken, teacherController.updateTeacher);
+app.delete('/api/teachers/:id', authenticateToken, authorize('admin'), teacherController.deleteTeacher);
 app.get('/api/teachers/:id/classes', authenticateToken, teacherController.getTeacherClasses);
 app.get('/api/teachers/:id/students', authenticateToken, teacherController.getTeacherStudents);
 app.get('/api/teachers/:id/assignments', authenticateToken, teacherController.getTeacherAssignments);
@@ -77,10 +80,10 @@ app.get('/api/classes', authenticateToken, async (req, res) => {
     });
   } catch (error) {
     console.error('Get classes error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
     });
   }
 });
@@ -89,11 +92,11 @@ app.get('/api/classes/:id', authenticateToken, async (req, res) => {
   try {
     const { Class } = await import('./models/Class.js');
     const classData = await Class.findById(req.params.id);
-    
+
     if (!classData) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Class not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Class not found'
       });
     }
 
@@ -104,10 +107,10 @@ app.get('/api/classes/:id', authenticateToken, async (req, res) => {
     });
   } catch (error) {
     console.error('Get class error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
     });
   }
 });
@@ -130,10 +133,10 @@ app.get('/api/assignments', authenticateToken, async (req, res) => {
     });
   } catch (error) {
     console.error('Get assignments error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
     });
   }
 });
@@ -144,7 +147,7 @@ app.get('/api/attendance', authenticateToken, async (req, res) => {
     const { getPool } = await import('./config/database.js');
     const pool = await getPool();
     const { classId, date, studentId } = req.query;
-    
+
     let query = `
       SELECT a.*, s.FirstName, s.LastName, c.ClassName
       FROM Attendance a
@@ -153,7 +156,7 @@ app.get('/api/attendance', authenticateToken, async (req, res) => {
       WHERE 1=1
     `;
     const params = [];
-    
+
     if (classId) {
       query += ' AND a.ClassID = ?';
       params.push(classId);
@@ -166,9 +169,9 @@ app.get('/api/attendance', authenticateToken, async (req, res) => {
       query += ' AND a.StudentID = ?';
       params.push(studentId);
     }
-    
+
     query += ' ORDER BY a.Date DESC, s.FirstName';
-    
+
     const [rows] = await pool.execute(query, params);
     res.json({
       success: true,
@@ -176,10 +179,10 @@ app.get('/api/attendance', authenticateToken, async (req, res) => {
     });
   } catch (error) {
     console.error('Get attendance error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
     });
   }
 });

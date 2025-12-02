@@ -17,22 +17,23 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const teacherNavItems = [
   { title: 'Dashboard', url: '/dashboard', icon: BarChart3 },
-  { title: 'Students', url: '/students', icon: Users },
-  { title: 'Courses', url: '/courses', icon: BookOpen },
-  { title: 'Attendance', url: '/attendance', icon: Calendar },
-  { title: 'Settings', url: '/settings', icon: Settings },
+  { title: 'Students', url: '/dashboard/students', icon: Users },
+  { title: 'Courses', url: '/dashboard/courses', icon: BookOpen },
+  { title: 'Attendance', url: '/dashboard/attendance', icon: Calendar },
+  { title: 'Settings', url: '/dashboard/settings', icon: Settings },
 ];
 
 const studentNavItems = [
   { title: 'Dashboard', url: '/dashboard', icon: BarChart3 },
-  { title: 'Timetable', url: '/timetable', icon: Table2 },
-  { title: 'My Courses', url: '/my-courses', icon: BookOpen },
-  { title: 'Assignments', url: '/assignments', icon: NotebookPen },
-  { title: 'Feedback', url: '/feedback', icon: User },
-  { title: 'Messages', url: '/messages', icon: MessageSquare },
-  { title: 'Notifications', url: '/notifications', icon: BellRing },
-  { title: 'My Attendance', url: '/my-attendance', icon: Calendar },
-  { title: 'My Grades', url: '/my-grades', icon: User },
+  { title: 'Timetable', url: '/dashboard/timetable', icon: Table2 },
+  { title: 'My Courses', url: '/dashboard/my-courses', icon: BookOpen },
+  { title: 'Assignments', url: '/dashboard/assignments', icon: NotebookPen },
+  { title: 'Feedback', url: '/dashboard/feedback', icon: User },
+  { title: 'Messages', url: '/dashboard/messages', icon: MessageSquare },
+  { title: 'Notifications', url: '/dashboard/notifications', icon: BellRing },
+  { title: 'My Attendance', url: '/dashboard/my-attendance', icon: Calendar },
+  { title: 'My Grades', url: '/dashboard/my-grades', icon: User },
+  { title: 'Settings', url: '/dashboard/settings', icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -46,7 +47,7 @@ export function AppSidebar() {
   const getNavClassName = ({ isActive }) =>
     `${isActive ? 'bg-primary text-primary-foreground shadow-md' : 'hover:bg-muted/60'} transition-all duration-200`;
 
-  const navItems = user?.role === 'teacher' ? teacherNavItems : studentNavItems;
+  const navItems = user?.Role === 'teacher' ? teacherNavItems : studentNavItems;
 
   return (
     <Sidebar className={`${collapsed ? 'w-16' : 'w-64'} border-r bg-card transition-all duration-300`}>
@@ -58,7 +59,7 @@ export function AppSidebar() {
           {!collapsed && (
             <div>
               <h2 className="font-bold text-lg gradient-text">EduManage</h2>
-              <p className="text-xs text-muted-foreground capitalize">{user?.role} Portal</p>
+              <p className="text-xs text-muted-foreground capitalize">{user?.Role} Portal</p>
             </div>
           )}
         </div>
@@ -76,7 +77,6 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
-                      end 
                       className={getNavClassName}
                     >
                       <item.icon className="h-5 w-5" />

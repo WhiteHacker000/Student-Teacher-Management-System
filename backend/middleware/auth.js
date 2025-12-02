@@ -6,10 +6,30 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key_here';
 // Authentication middleware
 export const authenticateToken = async (req, res, next) => {
   try {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    // Try multiple header formats (case-insensitive)
+    const authHeader = req.headers['authorization'] || req.headers['Authorization'];
+    
+    if (!authHeader) {
+      console.log('No authorization header found');
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Access token required' 
+      });
+    }
 
+    // Extract token from "Bearer TOKEN" format
+    const parts = authHeader.split(' ');
+    if (parts.length !== 2 || parts[0] !== 'Bearer') {
+      console.log('Invalid authorization header format:', authHeader);
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid authorization header format. Expected: Bearer <token>' 
+      });
+    }
+
+    const token = parts[1];
     if (!token) {
+      console.log('No token found in authorization header');
       return res.status(401).json({ 
         success: false, 
         message: 'Access token required' 
@@ -17,12 +37,32 @@ export const authenticateToken = async (req, res, next) => {
     }
 
     // Verify JWT token
-    const decoded = jwt.verify(token, JWT_SECRET);
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (jwtError) {
+      if (jwtError.name === 'JsonWebTokenError') {
+        console.log('JWT verification failed - invalid token:', jwtError.message);
+        return res.status(401).json({ 
+          success: false, 
+          message: 'Invalid token' 
+        });
+      }
+      if (jwtError.name === 'TokenExpiredError') {
+        console.log('JWT verification failed - token expired');
+        return res.status(401).json({ 
+          success: false, 
+          message: 'Token expired' 
+        });
+      }
+      throw jwtError;
+    }
     
     // Get user from database
     const db = await getDb();
     const user = await db.get('SELECT * FROM Users WHERE UserID = ?', [decoded.userId]);
     if (!user) {
+      console.log('User not found for userId:', decoded.userId);
       return res.status(401).json({ 
         success: false, 
         message: 'Invalid token - user not found' 
@@ -39,19 +79,6 @@ export const authenticateToken = async (req, res, next) => {
 
     next();
   } catch (error) {
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid token' 
-      });
-    }
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Token expired' 
-      });
-    }
-    
     console.error('Authentication error:', error);
     return res.status(500).json({ 
       success: false, 

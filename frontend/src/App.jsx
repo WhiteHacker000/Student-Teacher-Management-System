@@ -18,20 +18,43 @@ import Assignments from './pages/student/Assignments.jsx';
 import Feedback from './pages/student/Feedback.jsx';
 import Messages from './pages/student/Messages.jsx';
 import Notifications from './pages/student/Notifications.jsx';
+import { Loader2 } from 'lucide-react';
 
 function ProtectedRoute({ children }) {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  
+  if (isLoading) {
+    // Show loading state while checking auth
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+  
   if (!user) {
     return <Navigate to="/login" replace />;
   }
+  
   return children;
 }
 
 function PublicOnlyRoute({ children }) {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  
+  if (isLoading) {
+    // Show loading state while checking auth
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+  
   if (user) {
     return <Navigate to="/dashboard" replace />;
   }
+  
   return children;
 }
 

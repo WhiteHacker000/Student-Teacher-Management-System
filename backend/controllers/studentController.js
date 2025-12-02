@@ -12,10 +12,10 @@ export const getAllStudents = async (req, res) => {
     });
   } catch (error) {
     console.error('Get all students error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -25,11 +25,11 @@ export const getStudentById = async (req, res) => {
   try {
     const { id } = req.params;
     const student = await Student.findById(id);
-    
+
     if (!student) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Student not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found'
       });
     }
 
@@ -39,10 +39,10 @@ export const getStudentById = async (req, res) => {
     });
   } catch (error) {
     console.error('Get student by ID error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -52,11 +52,11 @@ export const getStudentClasses = async (req, res) => {
   try {
     const { id } = req.params;
     const student = await Student.findById(id);
-    
+
     if (!student) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Student not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found'
       });
     }
 
@@ -67,10 +67,10 @@ export const getStudentClasses = async (req, res) => {
     });
   } catch (error) {
     console.error('Get student classes error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -80,11 +80,11 @@ export const getStudentAssignments = async (req, res) => {
   try {
     const { id } = req.params;
     const student = await Student.findById(id);
-    
+
     if (!student) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Student not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found'
       });
     }
 
@@ -95,10 +95,10 @@ export const getStudentAssignments = async (req, res) => {
     });
   } catch (error) {
     console.error('Get student assignments error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -109,11 +109,11 @@ export const getStudentAttendance = async (req, res) => {
     const { id } = req.params;
     const { classId } = req.query;
     const student = await Student.findById(id);
-    
+
     if (!student) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Student not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found'
       });
     }
 
@@ -124,10 +124,10 @@ export const getStudentAttendance = async (req, res) => {
     });
   } catch (error) {
     console.error('Get student attendance error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -137,11 +137,11 @@ export const getStudentGrades = async (req, res) => {
   try {
     const { id } = req.params;
     const student = await Student.findById(id);
-    
+
     if (!student) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Student not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found'
       });
     }
 
@@ -152,10 +152,10 @@ export const getStudentGrades = async (req, res) => {
     });
   } catch (error) {
     console.error('Get student grades error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -166,9 +166,9 @@ export const createStudent = async (req, res) => {
     const { FirstName, LastName, Email, Phone, DOB, EnrollmentDate, ClassID } = req.body;
 
     if (!FirstName || !LastName || !Email) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'First name, last name, and email are required' 
+      return res.status(400).json({
+        success: false,
+        message: 'First name, last name, and email are required'
       });
     }
 
@@ -191,10 +191,10 @@ export const createStudent = async (req, res) => {
     });
   } catch (error) {
     console.error('Create student error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -204,11 +204,11 @@ export const updateStudent = async (req, res) => {
   try {
     const { id } = req.params;
     const student = await Student.findById(id);
-    
+
     if (!student) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Student not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found'
       });
     }
 
@@ -231,10 +231,39 @@ export const updateStudent = async (req, res) => {
     });
   } catch (error) {
     console.error('Update student error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
+    });
+  }
+};
+
+// Delete student
+export const deleteStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const student = await Student.findById(id);
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found'
+      });
+    }
+
+    await student.delete();
+
+    res.json({
+      success: true,
+      message: 'Student deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete student error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
     });
   }
 };
@@ -244,11 +273,11 @@ export const getStudentDashboard = async (req, res) => {
   try {
     const { id } = req.params;
     const student = await Student.findById(id);
-    
+
     if (!student) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Student not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found'
       });
     }
 
@@ -276,8 +305,8 @@ export const getStudentDashboard = async (req, res) => {
       return stats;
     }, { total: 0, present: 0, late: 0, absent: 0 });
 
-    const attendancePercentage = attendanceStats.total > 0 
-      ? ((attendanceStats.present + attendanceStats.late) / attendanceStats.total) * 100 
+    const attendancePercentage = attendanceStats.total > 0
+      ? ((attendanceStats.present + attendanceStats.late) / attendanceStats.total) * 100
       : 0;
 
     res.json({
@@ -295,10 +324,10 @@ export const getStudentDashboard = async (req, res) => {
     });
   } catch (error) {
     console.error('Get student dashboard error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
     });
   }
 };
