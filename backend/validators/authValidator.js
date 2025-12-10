@@ -2,52 +2,37 @@ import Joi from 'joi';
 
 // Registration validation schema
 export const registerSchema = Joi.object({
-  username: Joi.string()
-    .alphanum()
-    .min(3)
-    .max(30)
+  name: Joi.string()
+    .min(2)
+    .max(255)
     .required()
     .messages({
-      'string.alphanum': 'Username must only contain alphanumeric characters',
-      'string.min': 'Username must be at least 3 characters long',
-      'string.max': 'Username must not exceed 30 characters',
-      'any.required': 'Username is required'
+      'string.min': 'Name must be at least 2 characters long',
+      'string.max': 'Name must not exceed 255 characters',
+      'any.required': 'Name is required'
+    }),
+  
+  email: Joi.string()
+    .email()
+    .required()
+    .messages({
+      'string.email': 'Please provide a valid email address',
+      'any.required': 'Email is required'
     }),
   
   password: Joi.string()
-    .min(8)
-    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .min(6)
     .required()
     .messages({
-      'string.min': 'Password must be at least 8 characters long',
-      'string.pattern.base': 'Password must contain at least one uppercase letter, one lowercase letter, and one number',
+      'string.min': 'Password must be at least 6 characters long',
       'any.required': 'Password is required'
     }),
   
   role: Joi.string()
     .valid('student', 'teacher', 'admin')
-    .required()
+    .default('student')
     .messages({
-      'any.only': 'Role must be either student, teacher, or admin',
-      'any.required': 'Role is required'
-    }),
-  
-  firstName: Joi.string()
-    .min(1)
-    .max(50)
-    .required()
-    .messages({
-      'string.max': 'First name must not exceed 50 characters',
-      'any.required': 'First name is required'
-    }),
-  
-  lastName: Joi.string()
-    .min(1)
-    .max(50)
-    .required()
-    .messages({
-      'string.max': 'Last name must not exceed 50 characters',
-      'any.required': 'Last name is required'
+      'any.only': 'Role must be either student, teacher, or admin'
     }),
   
   email: Joi.string()
@@ -67,10 +52,12 @@ export const registerSchema = Joi.object({
 
 // Login validation schema
 export const loginSchema = Joi.object({
-  username: Joi.string()
+  email: Joi.string()
+    .email()
     .required()
     .messages({
-      'any.required': 'Username is required'
+      'string.email': 'Please provide a valid email address',
+      'any.required': 'Email is required'
     }),
   
   password: Joi.string()
