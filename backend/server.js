@@ -11,15 +11,15 @@ const __dirname = dirname(__filename);
 const envPath = join(__dirname, '.env');
 const result = dotenv.config({ path: envPath });
 
-// Debug: Check if .env was loaded
+// Debug: Check if .env was loaded (but don't exit if missing - use env vars from Render)
 if (result.error) {
-  console.error('❌ Error loading .env file:', result.error);
-  console.error('Looking for .env at:', envPath);
-  process.exit(1);
+  console.log('⚠️  No .env file found (using environment variables from hosting platform)');
+  console.log('📍 Looking for .env at:', envPath);
+} else {
+  console.log('✅ Environment variables loaded from .env file');
+  console.log('📍 .env file location:', envPath);
 }
 
-console.log('✅ Environment variables loaded successfully');
-console.log('📍 .env file location:', envPath);
 console.log(`📊 Database Type: ${process.env.DATABASE_TYPE || 'sqlite'}`);
 
 // Now import everything else after env vars are loaded
