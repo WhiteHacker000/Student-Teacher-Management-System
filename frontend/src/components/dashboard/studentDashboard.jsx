@@ -24,18 +24,18 @@ const StudentDashboard = () => {
     : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold gradient-text">My Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Track your academic progress</p>
+          <h1 className="text-4xl font-bold gradient-text mb-2">My Dashboard</h1>
+          <p className="text-slate-400 text-lg">Track your academic progress</p>
         </div>
         <div className="text-right">
-          <Badge variant="outline" className="status-present mb-2">
+          <Badge variant="outline" className="mb-2 text-sm">
             Student ID: {currentStudent?.studentId}
           </Badge>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-slate-400">
             Enrolled: {new Date(currentStudent?.enrollmentDate || '').toLocaleDateString()}
           </p>
         </div>
@@ -43,53 +43,61 @@ const StudentDashboard = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="card-gradient border-0">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Current GPA</CardTitle>
-            <Award className="h-4 w-4 text-primary" />
+        <Card className="card-gradient hover:scale-[1.02] transition-transform duration-300 group">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-medium text-slate-300">Current GPA</CardTitle>
+            <div className="p-2 rounded-xl bg-yellow-500/20 group-hover:bg-yellow-500/30 transition-colors">
+              <Award className="h-5 w-5 text-yellow-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-primary">{currentStudent?.gpa}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">{currentStudent?.gpa}</div>
+            <p className="text-xs text-slate-400 mt-1">
               Out of 4.0 scale
             </p>
           </CardContent>
         </Card>
 
-        <Card className="card-gradient border-0">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Enrolled Courses</CardTitle>
-            <BookOpen className="h-4 w-4 text-accent" />
+        <Card className="card-gradient hover:scale-[1.02] transition-transform duration-300 group">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-medium text-slate-300">Enrolled Courses</CardTitle>
+            <div className="p-2 rounded-xl bg-purple-500/20 group-hover:bg-purple-500/30 transition-colors">
+              <BookOpen className="h-5 w-5 text-purple-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-accent">{enrolledCourses.length}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{enrolledCourses.length}</div>
+            <p className="text-xs text-slate-400 mt-1">
               {currentStudent?.totalCredits} total credits
             </p>
           </CardContent>
         </Card>
 
-        <Card className="card-gradient border-0">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Attendance Rate</CardTitle>
-            <Calendar className="h-4 w-4 text-success" />
+        <Card className="card-gradient hover:scale-[1.02] transition-transform duration-300 group">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-medium text-slate-300">Attendance Rate</CardTitle>
+            <div className="p-2 rounded-xl bg-green-500/20 group-hover:bg-green-500/30 transition-colors">
+              <Calendar className="h-5 w-5 text-green-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-success">{attendanceRate}%</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">{attendanceRate}%</div>
+            <p className="text-xs text-slate-400 mt-1">
               This semester
             </p>
           </CardContent>
         </Card>
 
-        <Card className="card-gradient border-0">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Grade</CardTitle>
-            <TrendingUp className="h-4 w-4 text-warning" />
+        <Card className="card-gradient hover:scale-[1.02] transition-transform duration-300 group">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-medium text-slate-300">Average Grade</CardTitle>
+            <div className="p-2 rounded-xl bg-blue-500/20 group-hover:bg-blue-500/30 transition-colors">
+              <TrendingUp className="h-5 w-5 text-blue-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-warning">{averageGrade}%</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">{averageGrade}%</div>
+            <p className="text-xs text-slate-400 mt-1">
               Across all courses
             </p>
           </CardContent>
@@ -98,11 +106,13 @@ const StudentDashboard = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* My Courses */}
-        <Card className="card-gradient border-0">
-          <CardHeader>
+        <Card className="card-gradient group hover:shadow-neon transition-all duration-300">
+          <CardHeader className="border-b border-purple-500/20">
             <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-primary" />
-              My Courses
+              <div className="p-2 rounded-lg bg-purple-500/20 group-hover:bg-purple-500/30 transition-colors">
+                <BookOpen className="h-5 w-5 text-purple-400" />
+              </div>
+              <span className="text-purple-100">My Courses</span>
             </CardTitle>
             <CardDescription>
               Your enrolled courses this semester

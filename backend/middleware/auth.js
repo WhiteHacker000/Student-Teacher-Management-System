@@ -1,11 +1,20 @@
 import jwt from 'jsonwebtoken';
-import { getDb } from '../config/sqlite.js';
+import { executeQuerySingle } from '../config/database.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key_here';
+// Get JWT secret (will be checked at runtime)
+const getJWTSecret = () => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET is not defined in environment variables');
+  }
+  return secret;
+};
 
 // Authentication middleware
 export const authenticateToken = async (req, res, next) => {
   try {
+    const JWT_SECRET = getJWTSecret();
+    
     // Try multiple header formats (case-insensitive)
     const authHeader = req.headers['authorization'] || req.headers['Authorization'];
     
@@ -42,14 +51,12 @@ export const authenticateToken = async (req, res, next) => {
       decoded = jwt.verify(token, JWT_SECRET);
     } catch (jwtError) {
       if (jwtError.name === 'JsonWebTokenError') {
-        console.log('JWT verification failed - invalid token:', jwtError.message);
         return res.status(401).json({ 
           success: false, 
           message: 'Invalid token' 
         });
       }
       if (jwtError.name === 'TokenExpiredError') {
-        console.log('JWT verification failed - token expired');
         return res.status(401).json({ 
           success: false, 
           message: 'Token expired' 
@@ -59,10 +66,12 @@ export const authenticateToken = async (req, res, next) => {
     }
     
     // Get user from database
-    const db = await getDb();
-    const user = await db.get('SELECT * FROM Users WHERE UserID = ?', [decoded.userId]);
+    const user = await executeQuerySingle(
+      'SELECT id, name, email, role FROM users WHERE id = ?',
+      [decoded.id]
+    );
+    
     if (!user) {
-      console.log('User not found for userId:', decoded.userId);
       return res.status(401).json({ 
         success: false, 
         message: 'Invalid token - user not found' 
@@ -71,10 +80,10 @@ export const authenticateToken = async (req, res, next) => {
 
     // Add user info to request
     req.user = {
-      userId: user.UserID,
-      username: user.Username,
-      role: user.Role,
-      associatedId: user.AssociatedID
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role
     };
 
     next();

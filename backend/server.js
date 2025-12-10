@@ -1,214 +1,151 @@
+// Load environment variables FIRST before any other imports
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+// Get current directory for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Load environment variables first - specify path explicitly
+const envPath = join(__dirname, '.env');
+const result = dotenv.config({ path: envPath });
+
+// Debug: Check if .env was loaded
+if (result.error) {
+  console.error('❌ Error loading .env file:', result.error);
+  console.error('Looking for .env at:', envPath);
+  process.exit(1);
+}
+
+console.log('✅ Environment variables loaded successfully');
+console.log('📍 .env file location:', envPath);
+console.log(`📊 Database Type: ${process.env.DATABASE_TYPE || 'sqlite'}`);
+
+// Now import everything else after env vars are loaded
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
-// import { testConnection } from './config/database.js';
+import helmet from 'helmet';
 
-// Import controllers
-import * as authController from './controllers/simpleAuthController.js';
-import * as studentController from './controllers/studentController.js';
-import * as teacherController from './controllers/teacherController.js';
+// Import database connection
+import { connectDatabase, getDatabaseType } from './config/database.js';
+
+// Import SQL controllers
+import * as authController from './controllers/authController.js';
 
 // Import middleware
 import { authenticateToken, authorize } from './middleware/auth.js';
+import { generalLimiter, authLimiter, writeLimiter } from './middleware/rateLimiter.js';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import { logger } from './utils/logger.js';
+
+// Import validators
+import { registerSchema, loginSchema, validate } from './validators/authValidator.js';
+import { createStudentSchema, updateStudentSchema } from './validators/studentValidator.js';
+import { createCourseSchema, updateCourseSchema } from './validators/courseValidator.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Load environment variables
-dotenv.config();
+// Security middleware
+app.use(helmet());
 
-// Middleware
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-  credentials: true
-}));
+// CORS configuration
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:5173'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+
+// Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// SQLite database will be initialized automatically
+// Request logging
+app.use(logger.requestLogger());
+
+// Apply general rate limiting to all routes
+app.use('/api/', generalLimiter);
+
+// Connect to Database (MySQL or SQLite based on env)
+await connectDatabase();
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Server is running',
-    timestamp: new Date().toISOString()
-  });
+app.get('/api/health', async (req, res) => {
+  try {
+    const dbType = getDatabaseType();
+    res.json({
+      success: true,
+      message: 'Server is running',
+      database: dbType.toUpperCase(),
+      dbStatus: 'connected',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: process.env.NODE_ENV || 'development'
+    });
+  } catch (error) {
+    res.status(503).json({
+      success: false,
+      message: 'Service unavailable',
+      database: getDatabaseType().toUpperCase(),
+      dbStatus: 'disconnected',
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
-// Authentication routes
-app.post('/api/auth/register', authController.register);
-app.post('/api/auth/login', authController.login);
-// app.post('/api/auth/refresh', authController.refreshAccessToken);
+// Authentication routes (with rate limiting and validation)
+app.post('/api/auth/register', authLimiter, validate(registerSchema), authController.register);
+app.post('/api/auth/login', authLimiter, validate(loginSchema), authController.login);
 app.get('/api/auth/profile', authenticateToken, authController.getProfile);
-app.delete('/api/auth/account', authenticateToken, authController.deleteAccount);
-// app.put('/api/auth/profile', authenticateToken, authController.updateProfile);
+app.put('/api/auth/profile', authenticateToken, authController.updateProfile);
+app.put('/api/auth/change-password', authenticateToken, authController.changePassword);
 
-// Student routes
-app.get('/api/students', authenticateToken, authorize('admin', 'teacher'), studentController.getAllStudents);
-app.get('/api/students/:id', authenticateToken, studentController.getStudentById);
-app.post('/api/students', authenticateToken, authorize('admin'), studentController.createStudent);
-app.put('/api/students/:id', authenticateToken, studentController.updateStudent);
-app.delete('/api/students/:id', authenticateToken, authorize('admin'), studentController.deleteStudent);
-app.get('/api/students/:id/classes', authenticateToken, studentController.getStudentClasses);
-app.get('/api/students/:id/assignments', authenticateToken, studentController.getStudentAssignments);
-app.get('/api/students/:id/attendance', authenticateToken, studentController.getStudentAttendance);
-app.get('/api/students/:id/grades', authenticateToken, studentController.getStudentGrades);
-app.get('/api/students/:id/dashboard', authenticateToken, studentController.getStudentDashboard);
+// TODO: Add more routes (students, courses, assignments, attendance) with SQL controllers
 
-// Teacher routes
-app.get('/api/teachers', authenticateToken, authorize('admin'), teacherController.getAllTeachers);
-app.get('/api/teachers/:id', authenticateToken, teacherController.getTeacherById);
-app.post('/api/teachers', authenticateToken, authorize('admin'), teacherController.createTeacher);
-app.put('/api/teachers/:id', authenticateToken, teacherController.updateTeacher);
-app.delete('/api/teachers/:id', authenticateToken, authorize('admin'), teacherController.deleteTeacher);
-app.get('/api/teachers/:id/classes', authenticateToken, teacherController.getTeacherClasses);
-app.get('/api/teachers/:id/students', authenticateToken, teacherController.getTeacherStudents);
-app.get('/api/teachers/:id/assignments', authenticateToken, teacherController.getTeacherAssignments);
-app.get('/api/teachers/:id/classes/:classId/students', authenticateToken, teacherController.getStudentsInClass);
-app.get('/api/teachers/:id/classes/:classId/attendance', authenticateToken, teacherController.getClassAttendance);
-app.get('/api/teachers/:id/dashboard', authenticateToken, teacherController.getTeacherDashboard);
+// 404 handler (must be before error handler)
+app.use(notFoundHandler);
 
-// Class routes (basic CRUD)
-app.get('/api/classes', authenticateToken, async (req, res) => {
-  try {
-    const { Class } = await import('./models/Class.js');
-    const classes = await Class.findAll();
-    res.json({
-      success: true,
-      data: classes
-    });
-  } catch (error) {
-    console.error('Get classes error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error',
-      error: error.message
-    });
-  }
+// Global error handling middleware (must be last)
+app.use(errorHandler);
+
+// Start server
+const server = app.listen(PORT, () => {
+  logger.info(`🚀 Server running on http://localhost:${PORT}`);
+  logger.info(`📊 Database: ${getDatabaseType().toUpperCase()}`);
+  logger.info(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  logger.info(`🔒 Security: Helmet enabled`);
+  logger.info(`⚡ Rate limiting: Active`);
 });
 
-app.get('/api/classes/:id', authenticateToken, async (req, res) => {
-  try {
-    const { Class } = await import('./models/Class.js');
-    const classData = await Class.findById(req.params.id);
-
-    if (!classData) {
-      return res.status(404).json({
-        success: false,
-        message: 'Class not found'
-      });
+// Graceful shutdown handler
+const gracefulShutdown = async (signal) => {
+  logger.info(`${signal} received, closing server gracefully...`);
+  
+  server.close(async () => {
+    logger.info('HTTP server closed');
+    
+    try {
+      const { closeDatabase } = await import('./config/database.js');
+      await closeDatabase();
+      logger.info('Database connection closed');
+      process.exit(0);
+    } catch (error) {
+      logger.error('Error during shutdown:', { error: error.message });
+      process.exit(1);
     }
-
-    const classWithTeacher = await classData.getWithTeacher();
-    res.json({
-      success: true,
-      data: classWithTeacher
-    });
-  } catch (error) {
-    console.error('Get class error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error',
-      error: error.message
-    });
-  }
-});
-
-// Assignment routes
-app.get('/api/assignments', authenticateToken, async (req, res) => {
-  try {
-    const { getPool } = await import('./config/database.js');
-    const pool = await getPool();
-    const [rows] = await pool.execute(`
-      SELECT a.*, c.ClassName, t.FirstName as TeacherFirstName, t.LastName as TeacherLastName
-      FROM Assignments a
-      LEFT JOIN Classes c ON a.ClassID = c.ClassId
-      LEFT JOIN Teachers t ON a.TeacherID = t.TeacherID
-      ORDER BY a.DueDate DESC
-    `);
-    res.json({
-      success: true,
-      data: rows
-    });
-  } catch (error) {
-    console.error('Get assignments error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error',
-      error: error.message
-    });
-  }
-});
-
-// Attendance routes
-app.get('/api/attendance', authenticateToken, async (req, res) => {
-  try {
-    const { getPool } = await import('./config/database.js');
-    const pool = await getPool();
-    const { classId, date, studentId } = req.query;
-
-    let query = `
-      SELECT a.*, s.FirstName, s.LastName, c.ClassName
-      FROM Attendance a
-      JOIN Students s ON a.StudentID = s.StudentID
-      JOIN Classes c ON a.ClassID = c.ClassId
-      WHERE 1=1
-    `;
-    const params = [];
-
-    if (classId) {
-      query += ' AND a.ClassID = ?';
-      params.push(classId);
-    }
-    if (date) {
-      query += ' AND a.Date = ?';
-      params.push(date);
-    }
-    if (studentId) {
-      query += ' AND a.StudentID = ?';
-      params.push(studentId);
-    }
-
-    query += ' ORDER BY a.Date DESC, s.FirstName';
-
-    const [rows] = await pool.execute(query, params);
-    res.json({
-      success: true,
-      data: rows
-    });
-  } catch (error) {
-    console.error('Get attendance error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error',
-      error: error.message
-    });
-  }
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({
-    success: false,
-    message: 'Internal server error',
-    error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
   });
-});
+  
+  // Force shutdown after 10 seconds
+  setTimeout(() => {
+    logger.error('Forced shutdown after timeout');
+    process.exit(1);
+  }, 10000);
+};
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Route not found'
-  });
-});
-
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`📊 Database: ${process.env.MYSQL_DATABASE || 'student_management_system'}`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-});
+// Handle shutdown signals
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 

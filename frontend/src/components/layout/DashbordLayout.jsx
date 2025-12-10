@@ -15,26 +15,26 @@ const DashboardLayout = ({ children }) => {
         <AppSidebar />
         
         <div className="flex-1 flex flex-col">
-          <header className="h-16 border-b bg-card/50 backdrop-blur-sm flex items-center px-6">
+          <header className="h-16 border-b border-purple-500/20 bg-slate-900/40 backdrop-blur-xl flex items-center px-6 shadow-glow">
             <SidebarTrigger className="mr-4" />
             <div className="flex-1">
-              <h1 className="text-xl font-semibold">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-purple-200 to-pink-200 bg-clip-text text-transparent">
                 Welcome back, {user?.name}
               </h1>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-slate-400">
                 {user?.role === 'teacher'
                   ? 'Manage your classes and students'
                   : 'Track your academic progress'}
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <Avatar className="h-8 w-8">
+              <Avatar className="h-9 w-9 ring-2 ring-purple-500/30">
                 <AvatarImage src={user?.avatar} alt={user?.name} />
-                <AvatarFallback className="bg-gradient-primary text-white">
+                <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-semibold">
                   {user?.name?.split(' ').map(n => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>
-              <Button variant="outline" onClick={logout} className="text-sm">
+              <Button variant="outline" onClick={logout} className="text-sm" size="sm">
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
               </Button>

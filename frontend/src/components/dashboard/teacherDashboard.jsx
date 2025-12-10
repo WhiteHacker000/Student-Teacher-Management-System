@@ -15,15 +15,15 @@ const TeacherDashboard = () => {
   const upcomingClasses = mockCourses.slice(0, 3);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold gradient-text">Teacher Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Manage your classes and students</p>
+          <h1 className="text-4xl font-bold gradient-text mb-2">Teacher Dashboard</h1>
+          <p className="text-slate-400 text-lg">Manage your classes and students</p>
         </div>
-        <div className="flex gap-2">
-          <Button className="bg-gradient-primary">
+        <div className="flex gap-3">
+          <Button className="shadow-glow">
             <UserPlus className="h-4 w-4 mr-2" />
             Add Student
           </Button>
@@ -36,54 +36,62 @@ const TeacherDashboard = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="card-gradient border-0">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
-            <Users className="h-4 w-4 text-primary" />
+        <Card className="card-gradient hover:scale-[1.02] transition-transform duration-300 group">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-medium text-slate-300">Total Students</CardTitle>
+            <div className="p-2 rounded-xl bg-indigo-500/20 group-hover:bg-indigo-500/30 transition-colors">
+              <Users className="h-5 w-5 text-indigo-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-primary">{totalStudents}</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-success">+2</span> from last month
+            <div className="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">{totalStudents}</div>
+            <p className="text-xs text-slate-400 mt-1">
+              <span className="text-green-400 font-semibold">+2</span> from last month
             </p>
           </CardContent>
         </Card>
 
-        <Card className="card-gradient border-0">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Courses</CardTitle>
-            <BookOpen className="h-4 w-4 text-accent" />
+        <Card className="card-gradient hover:scale-[1.02] transition-transform duration-300 group">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-medium text-slate-300">Active Courses</CardTitle>
+            <div className="p-2 rounded-xl bg-purple-500/20 group-hover:bg-purple-500/30 transition-colors">
+              <BookOpen className="h-5 w-5 text-purple-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-accent">{activeCourses}</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-success">+1</span> new this semester
+            <div className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{activeCourses}</div>
+            <p className="text-xs text-slate-400 mt-1">
+              <span className="text-green-400 font-semibold">+1</span> new this semester
             </p>
           </CardContent>
         </Card>
 
-        <Card className="card-gradient border-0">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Attendance</CardTitle>
-            <Calendar className="h-4 w-4 text-warning" />
+        <Card className="card-gradient hover:scale-[1.02] transition-transform duration-300 group">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-medium text-slate-300">Today's Attendance</CardTitle>
+            <div className="p-2 rounded-xl bg-yellow-500/20 group-hover:bg-yellow-500/30 transition-colors">
+              <Calendar className="h-5 w-5 text-yellow-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-warning">{todayAttendance}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">{todayAttendance}</div>
+            <p className="text-xs text-slate-400 mt-1">
               Records marked today
             </p>
           </CardContent>
         </Card>
 
-        <Card className="card-gradient border-0">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Attendance Rate</CardTitle>
-            <TrendingUp className="h-4 w-4 text-success" />
+        <Card className="card-gradient hover:scale-[1.02] transition-transform duration-300 group">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-medium text-slate-300">Attendance Rate</CardTitle>
+            <div className="p-2 rounded-xl bg-green-500/20 group-hover:bg-green-500/30 transition-colors">
+              <TrendingUp className="h-5 w-5 text-green-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-success">{attendanceRate}%</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-success">+5%</span> from last week
+            <div className="text-3xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">{attendanceRate}%</div>
+            <p className="text-xs text-slate-400 mt-1">
+              <span className="text-green-400 font-semibold">+5%</span> from last week
             </p>
           </CardContent>
         </Card>
@@ -91,11 +99,13 @@ const TeacherDashboard = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Students */}
-        <Card className="card-gradient border-0">
-          <CardHeader>
+        <Card className="card-gradient group hover:shadow-neon transition-all duration-300">
+          <CardHeader className="border-b border-purple-500/20">
             <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
-              Recent Students
+              <div className="p-2 rounded-lg bg-indigo-500/20 group-hover:bg-indigo-500/30 transition-colors">
+                <Users className="h-5 w-5 text-indigo-400" />
+              </div>
+              <span className="text-purple-100">Recent Students</span>
             </CardTitle>
             <CardDescription>
               Newly enrolled students this semester

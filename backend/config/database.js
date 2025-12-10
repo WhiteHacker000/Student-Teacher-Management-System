@@ -1,54 +1,57 @@
-import mysql from 'mysql2/promise';
-import dotenv from 'dotenv';
+import { connectMySQL, getPool, closeConnection as closeMySQLConnection } from './mysql.js';
+import { logger } from '../utils/logger.js';
 
-dotenv.config();
+let dbInstance = null;
 
-// Database connection configuration
-const dbConfig = {
-  host: process.env.MYSQL_HOST || 'localhost',
-  port: process.env.MYSQL_PORT || 3306,
-  user: process.env.MYSQL_USER || 'root',
-  password: process.env.MYSQL_PASSWORD || '',
-  database: process.env.MYSQL_DATABASE || 'student_management_system',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-};
-
-// Create connection pool
-let pool;
-
-export const getPool = async () => {
-  if (!pool) {
-    try {
-      pool = mysql.createPool(dbConfig);
-      console.log('Database connection pool created successfully');
-      
-      // Test the connection
-      const connection = await pool.getConnection();
-      console.log('Database connected successfully');
-      connection.release();
-    } catch (error) {
-      console.error('Database connection failed:', error);
-      throw error;
-    }
-  }
-  return pool;
-};
-
-// Test database connection
-export const testConnection = async () => {
+export const connectDatabase = async () => {
   try {
-    const pool = await getPool();
-    const connection = await pool.getConnection();
-    await connection.ping();
-    connection.release();
-    console.log('Database connection test successful');
-    return true;
+    logger.info('🔄 Connecting to MySQL...');
+    dbInstance = await connectMySQL();
+    return { type: 'mysql', instance: dbInstance };
   } catch (error) {
-    console.error('Database connection test failed:', error);
-    return false;
+    logger.error('❌ Database connection failed:', error);
+    throw error;
   }
 };
 
-export default dbConfig;
+export const getDatabase = () => {
+  return getPool();
+};
+
+export const getDatabaseType = () => 'mysql';
+
+export const closeDatabase = async () => {
+  await closeMySQLConnection();
+};
+
+// Execute query for MySQL
+export const executeQuery = async (query, params = []) => {
+  const db = getDatabase();
+  const [rows] = await db.execute(query, params);
+  return rows;
+};
+
+// Get single row
+export const executeQuerySingle = async (query, params = []) => {
+  const db = getDatabase();
+  const [rows] = await db.execute(query, params);
+  return rows[0] || null;
+};
+
+// Transaction helper
+export const executeTransaction = async (callback) => {
+  const db = getDatabase();
+  const connection = await db.getConnection();
+  
+  try {
+    await connection.beginTransaction();
+    const result = await callback(connection);
+    await connection.commit();
+    return result;
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};

@@ -87,13 +87,25 @@ class ApiService {
     return this.put('/api/auth/profile', userData);
   }
 
-  // Student endpoints
+  // Student endpoints (Full CRUD)
   async getStudents() {
     return this.get('/api/students');
   }
 
   async getStudent(id) {
     return this.get(`/api/students/${id}`);
+  }
+
+  async createStudent(studentData) {
+    return this.post('/api/students', studentData);
+  }
+
+  async updateStudent(id, studentData) {
+    return this.put(`/api/students/${id}`, studentData);
+  }
+
+  async deleteStudent(id) {
+    return this.delete(`/api/students/${id}`);
   }
 
   async getStudentDashboard(id) {
@@ -160,9 +172,63 @@ class ApiService {
     return this.get(`/api/classes/${id}`);
   }
 
-  // Assignment endpoints
-  async getAssignments() {
-    return this.get('/api/assignments');
+  // Course endpoints (Full CRUD)
+  async getCourses() {
+    return this.get('/api/courses');
+  }
+
+  async getCourse(id) {
+    return this.get(`/api/courses/${id}`);
+  }
+
+  async createCourse(courseData) {
+    return this.post('/api/courses', courseData);
+  }
+
+  async updateCourse(id, courseData) {
+    return this.put(`/api/courses/${id}`, courseData);
+  }
+
+  async deleteCourse(id) {
+    return this.delete(`/api/courses/${id}`);
+  }
+
+  async getCourseEnrollments(id) {
+    return this.get(`/api/courses/${id}/enrollments`);
+  }
+
+  async getCourseAssignments(id) {
+    return this.get(`/api/courses/${id}/assignments`);
+  }
+
+  // Assignment endpoints (Full CRUD)
+  async getAssignments(courseId = null) {
+    const params = courseId ? `?courseId=${courseId}` : '';
+    return this.get(`/api/assignments${params}`);
+  }
+
+  async getAssignment(id) {
+    return this.get(`/api/assignments/${id}`);
+  }
+
+  async createAssignment(assignmentData) {
+    return this.post('/api/assignments', assignmentData);
+  }
+
+  async updateAssignment(id, assignmentData) {
+    return this.put(`/api/assignments/${id}`, assignmentData);
+  }
+
+  async deleteAssignment(id) {
+    return this.delete(`/api/assignments/${id}`);
+  }
+
+  async getUpcomingAssignments(limit = 10) {
+    return this.get(`/api/assignments/upcoming?limit=${limit}`);
+  }
+
+  async getAssignmentSubmissions(id) {
+    return this.get(`/api/assignments/${id}/submissions`);
   }
 
   // Attendance endpoints

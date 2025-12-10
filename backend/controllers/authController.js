@@ -1,134 +1,95 @@
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { User } from '../models/User.js';
-import { Student } from '../models/Student.js';
-import { Teacher } from '../models/Teacher.js';
+import { executeQuery, executeQuerySingle } from '../config/database.js';
+import { logger } from '../utils/logger.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key_here';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'your_super_secret_refresh_jwt_key_here';
-const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '30d';
-
-// Generate JWT access token
+// Generate JWT token
 const generateToken = (user) => {
   return jwt.sign(
     { 
-      userId: user.UserID, 
-      username: user.Username, 
-      role: user.Role,
-      associatedId: user.AssociatedID 
+      id: user.id, 
+      email: user.email, 
+      role: user.role,
+      name: user.name 
     },
-    JWT_SECRET,
-    { expiresIn: JWT_EXPIRES_IN }
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
 };
 
-// Generate JWT refresh token
-const generateRefreshToken = (user) => {
-  return jwt.sign(
-    { 
-      userId: user.UserID, 
-      username: user.Username 
-    },
-    JWT_REFRESH_SECRET,
-    { expiresIn: JWT_REFRESH_EXPIRES_IN }
-  );
-};
-
-// Register a new user
+// Register new user
 export const register = async (req, res) => {
   try {
-    const { username, password, role, firstName, lastName, email, phone, dob, hireDate, departmentId, classId } = req.body;
-
-    // Validate required fields
-    if (!username || !password || !role) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Username, password, and role are required' 
-      });
-    }
+    const { name, email, password, role = 'student', phone, address, dateOfBirth } = req.body;
 
     // Check if user already exists
-    const existingUser = await User.findByUsername(username);
+    const existingUser = await executeQuerySingle(
+      'SELECT id FROM users WHERE email = ?',
+      [email]
+    );
+
     if (existingUser) {
-      return res.status(409).json({ 
+      return res.status(400).json({ 
         success: false, 
-        message: 'Username already exists' 
+        message: 'User with this email already exists' 
       });
     }
 
-    // Create associated record based on role
-    let associatedId = null;
-    if (role === 'student') {
-      if (!firstName || !lastName || !email) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'First name, last name, and email are required for students' 
-        });
-      }
-      associatedId = await Student.create({
-        FirstName: firstName,
-        LastName: lastName,
-        Email: email,
-        Phone: phone,
-        DOB: dob,
-        EnrollmentDate: new Date(),
-        ClassID: classId
-      });
-    } else if (role === 'teacher') {
-      if (!firstName || !lastName || !email) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'First name, last name, and email are required for teachers' 
-        });
-      }
-      associatedId = await Teacher.create({
-        FirstName: firstName,
-        LastName: lastName,
-        Email: email,
-        Phone: phone,
-        HireDate: hireDate || new Date(),
-        DepartmentID: departmentId
-      });
-    }
+    // Hash password
+    const passwordHash = await bcrypt.hash(password, 10);
 
-    // Create user account
-    const userId = await User.create({
-      Username: username,
-      Password: password,
-      Role: role,
-      AssociatedID: associatedId
-    });
+    // Generate student/teacher ID
+    const prefix = role === 'teacher' ? 'T' : 'S';
+    const timestamp = Date.now().toString().slice(-6);
+    const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    const generatedId = `${prefix}${timestamp}${randomNum}`;
 
-    // Get the created user
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(500).json({
-        success: false,
-        message: 'Failed to retrieve created user'
-      });
-    }
-    const token = generateToken(user);
-    const refreshToken = generateRefreshToken(user);
+    // Insert user
+    const query = `
+      INSERT INTO users (
+        name, email, password_hash, role, phone, address, date_of_birth,
+        ${role === 'teacher' ? 'teacher_id' : 'student_id'}
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
 
-    // Update last login
-    await user.updateLastLogin();
+    const result = await executeQuery(query, [
+      name, email, passwordHash, role, phone || null, 
+      address || null, dateOfBirth || null, generatedId
+    ]);
+
+    // Fetch created user
+    const newUser = await executeQuerySingle(
+      'SELECT id, name, email, role, student_id, teacher_id, phone, address FROM users WHERE id = ?',
+      [result.insertId]
+    );
+
+    // Generate token
+    const token = generateToken(newUser);
+
+    logger.info(`✅ New user registered: ${email} (${role})`);
 
     res.status(201).json({
       success: true,
       message: 'User registered successfully',
       data: {
-        user: user.getSafeData(),
-        token,
-        refreshToken
+        user: {
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email,
+          role: newUser.role,
+          studentId: newUser.student_id,
+          teacherId: newUser.teacher_id,
+          phone: newUser.phone,
+          address: newUser.address
+        },
+        token
       }
     });
-
   } catch (error) {
-    console.error('Registration error:', error);
+    logger.error('Registration error:', error);
     res.status(500).json({ 
       success: false, 
-      message: 'Internal server error',
-      error: error.message 
+      message: 'Server error during registration' 
     });
   }
 };
@@ -136,61 +97,59 @@ export const register = async (req, res) => {
 // Login user
 export const login = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!username || !password) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Username and password are required' 
-      });
+    // Find user
+    const user = await executeQuerySingle(
+      'SELECT * FROM users WHERE email = ?',
+      [email]
+    );
 
-    }
-
-    // Find user by username
-    const user = await User.findByUsername(username);
     if (!user) {
       return res.status(401).json({ 
         success: false, 
-        message: 'Invalid credentials' 
+        message: 'Invalid email or password' 
       });
     }
 
     // Verify password
-    const isValidPassword = await user.verifyPassword(password);
+    const isValidPassword = await bcrypt.compare(password, user.password_hash);
+
     if (!isValidPassword) {
       return res.status(401).json({ 
         success: false, 
-        message: 'Invalid credentials' 
+        message: 'Invalid email or password' 
       });
     }
 
-    // Generate tokens
+    // Generate token
     const token = generateToken(user);
-    const refreshToken = generateRefreshToken(user);
 
-    // Update last login
-    await user.updateLastLogin();
-
-    // Get user profile
-    const profile = await user.getProfile();
+    logger.info(`✅ User logged in: ${email}`);
 
     res.json({
       success: true,
       message: 'Login successful',
       data: {
-        user: user.getSafeData(),
-        profile,
-        token,
-        refreshToken
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          studentId: user.student_id,
+          teacherId: user.teacher_id,
+          phone: user.phone,
+          address: user.address,
+          avatar: user.avatar
+        },
+        token
       }
     });
-
   } catch (error) {
-    console.error('Login error:', error);
+    logger.error('Login error:', error);
     res.status(500).json({ 
       success: false, 
-      message: 'Internal server error',
-      error: error.message 
+      message: 'Server error during login' 
     });
   }
 };
@@ -198,7 +157,11 @@ export const login = async (req, res) => {
 // Get current user profile
 export const getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.userId);
+    const user = await executeQuerySingle(
+      'SELECT id, name, email, role, student_id, teacher_id, phone, address, date_of_birth, avatar, created_at FROM users WHERE id = ?',
+      [req.user.id]
+    );
+
     if (!user) {
       return res.status(404).json({ 
         success: false, 
@@ -206,22 +169,27 @@ export const getProfile = async (req, res) => {
       });
     }
 
-    const profile = await user.getProfile();
-
     res.json({
       success: true,
       data: {
-        user: user.getSafeData(),
-        profile
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        studentId: user.student_id,
+        teacherId: user.teacher_id,
+        phone: user.phone,
+        address: user.address,
+        dateOfBirth: user.date_of_birth,
+        avatar: user.avatar,
+        createdAt: user.created_at
       }
     });
-
   } catch (error) {
-    console.error('Get profile error:', error);
+    logger.error('Get profile error:', error);
     res.status(500).json({ 
       success: false, 
-      message: 'Internal server error',
-      error: error.message 
+      message: 'Server error' 
     });
   }
 };
@@ -229,105 +197,98 @@ export const getProfile = async (req, res) => {
 // Update user profile
 export const updateProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.userId);
-    if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'User not found' 
-      });
-    }
+    const { name, phone, address, dateOfBirth, avatar } = req.body;
+    
+    const query = `
+      UPDATE users 
+      SET name = COALESCE(?, name),
+          phone = COALESCE(?, phone),
+          address = COALESCE(?, address),
+          date_of_birth = COALESCE(?, date_of_birth),
+          avatar = COALESCE(?, avatar),
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `;
 
-    const { firstName, lastName, email, phone } = req.body;
+    await executeQuery(query, [
+      name || null, phone || null, address || null, 
+      dateOfBirth || null, avatar || null, req.user.id
+    ]);
 
-    // Update associated record
-    if (user.Role === 'student' && user.AssociatedID) {
-      const student = await Student.findById(user.AssociatedID);
-      if (student) {
-        await student.update({ FirstName: firstName, LastName: lastName, Email: email, Phone: phone });
-      }
-    } else if (user.Role === 'teacher' && user.AssociatedID) {
-      const teacher = await Teacher.findById(user.AssociatedID);
-      if (teacher) {
-        await teacher.update({ FirstName: firstName, LastName: lastName, Email: email, Phone: phone });
-      }
-    }
+    // Fetch updated user
+    const updatedUser = await executeQuerySingle(
+      'SELECT id, name, email, role, student_id, teacher_id, phone, address, date_of_birth, avatar FROM users WHERE id = ?',
+      [req.user.id]
+    );
 
-    const profile = await user.getProfile();
+    logger.info(`✅ Profile updated for user: ${req.user.email}`);
 
     res.json({
       success: true,
       message: 'Profile updated successfully',
       data: {
-        user: user.getSafeData(),
-        profile
+        id: updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        studentId: updatedUser.student_id,
+        teacherId: updatedUser.teacher_id,
+        phone: updatedUser.phone,
+        address: updatedUser.address,
+        dateOfBirth: updatedUser.date_of_birth,
+        avatar: updatedUser.avatar
       }
     });
-
   } catch (error) {
-    console.error('Update profile error:', error);
+    logger.error('Update profile error:', error);
     res.status(500).json({ 
       success: false, 
-      message: 'Internal server error',
-      error: error.message 
+      message: 'Server error' 
     });
   }
 };
 
-// Refresh access token using refresh token
-export const refreshAccessToken = async (req, res) => {
+// Change password
+export const changePassword = async (req, res) => {
   try {
-    const { refreshToken } = req.body;
+    const { currentPassword, newPassword } = req.body;
 
-    if (!refreshToken) {
+    // Get user with password
+    const user = await executeQuerySingle(
+      'SELECT password_hash FROM users WHERE id = ?',
+      [req.user.id]
+    );
+
+    // Verify current password
+    const isValid = await bcrypt.compare(currentPassword, user.password_hash);
+
+    if (!isValid) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Refresh token is required' 
+        message: 'Current password is incorrect' 
       });
     }
 
-    // Verify refresh token
-    let decoded;
-    try {
-      decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
-    } catch (error) {
-      if (error.name === 'TokenExpiredError') {
-        return res.status(401).json({ 
-          success: false, 
-          message: 'Refresh token has expired' 
-        });
-      }
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid refresh token' 
-      });
-    }
+    // Hash new password
+    const newPasswordHash = await bcrypt.hash(newPassword, 10);
 
-    // Get user from database
-    const user = await User.findById(decoded.userId);
-    if (!user) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'User not found' 
-      });
-    }
+    // Update password
+    await executeQuery(
+      'UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [newPasswordHash, req.user.id]
+    );
 
-    // Generate new access token
-    const newToken = generateToken(user);
+    logger.info(`✅ Password changed for user: ${req.user.email}`);
 
     res.json({
       success: true,
-      message: 'Access token refreshed successfully',
-      data: {
-        token: newToken
-      }
+      message: 'Password changed successfully'
     });
-
   } catch (error) {
-    console.error('Refresh token error:', error);
+    logger.error('Change password error:', error);
     res.status(500).json({ 
       success: false, 
-      message: 'Internal server error',
-      error: error.message 
+      message: 'Server error' 
     });
   }
 };

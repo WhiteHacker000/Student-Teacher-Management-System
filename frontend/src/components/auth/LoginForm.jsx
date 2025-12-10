@@ -34,27 +34,29 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="min-h-screen hero-section flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6 animate-fade-in">
+    <div className="min-h-screen hero-section flex items-center justify-center p-4 relative">
+      <div className="w-full max-w-md space-y-8 animate-fade-in relative z-10">
         <div className="text-center text-white">
-          <div className="flex justify-center mb-4">
-            <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-sm">
-              <GraduationCap className="h-12 w-12" />
+          <div className="flex justify-center mb-6">
+            <div className="p-4 bg-gradient-to-br from-indigo-500/20 to-purple-600/20 rounded-3xl backdrop-blur-sm border border-purple-500/30 shadow-neon">
+              <GraduationCap className="h-14 w-14 text-purple-300" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold mb-2">EduManage</h1>
-          <p className="text-white/80">Student Management System</p>
+          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-purple-200 via-pink-200 to-purple-300 bg-clip-text text-transparent">
+            EduManage
+          </h1>
+          <p className="text-slate-300 text-lg">Student Management System</p>
         </div>
 
-        <Card className="card-gradient border-0 backdrop-blur-sm bg-white/95">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl gradient-text">Welcome Back</CardTitle>
-            <CardDescription>
+        <Card className="card-gradient border-purple-500/30 backdrop-blur-xl bg-slate-900/60 shadow-neon">
+          <CardHeader className="text-center border-b border-purple-500/20 pb-6">
+            <CardTitle className="text-3xl gradient-text">Welcome Back</CardTitle>
+            <CardDescription className="text-slate-400 mt-2">
               Sign in to access your dashboard
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+          <CardContent className="pt-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="username">Username</Label>
                 <Input
@@ -64,7 +66,7 @@ const LoginForm = () => {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
-                  className="transition-all duration-300 focus:scale-[1.02]"
+                  className="transition-all duration-300 focus:scale-[1.01] focus:shadow-[0_0_20px_rgba(168,85,247,0.3)]"
                 />
               </div>
               <div className="space-y-2">
@@ -76,12 +78,12 @@ const LoginForm = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="transition-all duration-300 focus:scale-[1.02]"
+                  className="transition-all duration-300 focus:scale-[1.01] focus:shadow-[0_0_20px_rgba(168,85,247,0.3)]"
                 />
               </div>
               <Button 
                 type="submit" 
-                className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-300 hover:scale-[1.02]"
+                className="w-full mt-6"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -95,9 +97,9 @@ const LoginForm = () => {
               </Button>
             </form>
             
-            <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-              <p className="text-sm text-muted-foreground mb-2 font-medium">Demo Accounts:</p>
-              <div className="space-y-1 text-xs">
+            <div className="mt-6 p-4 bg-purple-500/10 backdrop-blur-sm rounded-xl border border-purple-500/20">
+              <p className="text-sm text-purple-200 mb-3 font-semibold">Demo Accounts:</p>
+              <div className="space-y-2 text-xs text-slate-300">
                 <p><strong>Teacher:</strong> teacher1</p>
                 <p><strong>Student:</strong> student1</p>
                 <p><strong>Password:</strong> password123</p>
